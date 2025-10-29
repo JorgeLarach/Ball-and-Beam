@@ -146,6 +146,7 @@ uint32_t SERVO_set_angle(uint8_t angle){
 	return pulse_width;
 }
 
+// Prototyping function
 uint8_t SERVO_map_distance_to_angle(float prec){
 	return (uint8_t)((prec-HCSR04_MIN_DIST_CM)/
 		    (HCSR04_MAX_DIST_CM - HCSR04_MIN_DIST_CM)*
@@ -219,49 +220,36 @@ int main(void)
 
   SERVO_set_angle(90);
 
-
   uint32_t last_trigger = 0;
-  int angle = 0;
-  int direction = 1;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  SERVO_set_angle(angle);
-//	  if(angle > 180) direction = -1;
-//	  if(angle < 0) direction = 1;
-//
-//	  angle += direction;
-//	  HAL_Delay(10);
+
+	uint32_t now = HAL_GetTick();
+	if (now - last_trigger >= 50) {   // 50 ms interval
+	    HCSR04_trigger_pulse();        // just sends 10 µs pulse
+	    last_trigger = now;
+	}
+
+	if (distance_ready) {
+	    distance_ready = 0;
+	    DBUF_add(&distance_buffer, latest_distance);
+
+	    float desired_prec = DBUF_average(&distance_buffer);
 
 
-
-
-
-//	uint32_t now = HAL_GetTick();
-//	if (now - last_trigger >= 50) {   // 50 ms interval
-//	    HCSR04_trigger_pulse();        // just sends 10 µs pulse
-//	    last_trigger = now;
-//	}
-//
-//	if (distance_ready) {
-//	    distance_ready = 0;
-//	    DBUF_add(&distance_buffer, latest_distance);
-//
-//	    float desired_prec = DBUF_average(&distance_buffer);
-//
-//
-//	    uint8_t angle = SERVO_map_distance_to_angle(desired_prec);
+	    uint8_t angle = SERVO_map_distance_to_angle(desired_prec);
 //	    SERVO_set_angle(angle);
-//
-//
-//
-//
-//
-//	    UART_print_average();
-//
-//	}
+
+
+
+
+
+	    UART_print_average();
+
+	}
 
       // 1/seconds = hertz
       // 1/0.05 seconds = 20hz - iterate while loop 20 times per sec
