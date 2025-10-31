@@ -72,6 +72,7 @@ uint32_t SERVO_set_angle(uint8_t angle);
 uint32_t SERVO_calculate_pulse_width(uint8_t angle);
 void UART_print_distance(float distance);
 void UART_print_average(void);
+uint32_t PID_proportional(float measured_distance);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -226,6 +227,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+//	SERVO_set_angle(90);
 
 	uint32_t now = HAL_GetTick();
 	if (now - last_trigger >= 50) {   // 50 ms interval

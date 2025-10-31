@@ -1629,6 +1629,7 @@ uint32_t SERVO_set_angle(uint8_t angle){
 
 080011c4 <SERVO_map_distance_to_angle>:
 
+// Prototyping function
 uint8_t SERVO_map_distance_to_angle(float prec){
  80011c4:	b480      	push	{r7}
  80011c6:	b083      	sub	sp, #12
@@ -1802,10 +1803,10 @@ int main(void)
   uint32_t last_trigger = 0;
  80012ee:	2300      	movs	r3, #0
  80012f0:	60fb      	str	r3, [r7, #12]
-  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+//	SERVO_set_angle(90);
 
 	uint32_t now = HAL_GetTick();
  80012f2:	f000 fcc9 	bl	8001c88 <HAL_GetTick>
