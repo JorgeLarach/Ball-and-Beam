@@ -83,6 +83,8 @@ volatile float latest_distance = -1.0f;  // shared between ISR and main
 volatile uint8_t distance_ready = 0;     // flag to tell main loop new data is ready
 
 const float SPEED_OF_SOUND_CM_US = 0.0343f; // cm per microsecond
+const uint8_t setpoint_cm = 20;
+const float Kp = 8.0f;
 
 DBUF distance_buffer;
 
@@ -95,7 +97,7 @@ char uart_buf[100] = {'\0'};
 #define MIN_ROTATION_DEGREES 0
 #define MAX_ROTATION_DEGREES 180  // Max angle a servo can rotate
 #define HCSR04_MIN_DIST_CM   3
-#define HCSR04_MAX_DIST_CM   30
+#define HCSR04_MAX_DIST_CM   34
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
@@ -112,9 +114,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
         float distance_cm = ((float)edge_diff) * (SPEED_OF_SOUND_CM_US / 2.0f);
         if(distance_cm > HCSR04_MAX_DIST_CM) distance_cm = HCSR04_MAX_DIST_CM;
         if(distance_cm < HCSR04_MIN_DIST_CM) distance_cm = HCSR04_MIN_DIST_CM;
-        latest_distance = distance_cm; // Write result
+        latest_distance = distance_cm;
 
-        distance_ready = 1; // Signal main loop
+        distance_ready = 1;
     }
 }
 
@@ -173,6 +175,25 @@ void UART_print_average(void) {
     HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
 }
 
+uint32_t PID_proportional(float measured_distance){
+	float error = measured_distance - setpoint_cm;
+
+	if(error < 2 && error > -2) error = 0;
+    float output = Kp * error;
+
+    float angle = 90.0f + output;
+
+    if(angle < MIN_ROTATION_DEGREES) angle = MIN_ROTATION_DEGREES;
+    if(angle > MAX_ROTATION_DEGREES) angle = MAX_ROTATION_DEGREES;
+
+//    SERVO_set_angle((uint8_t)angle);
+    snprintf(uart_buf, sizeof(uart_buf), "dist: %.5f error: %.5f output: %.5f angle: %.5f \r\n", measured_distance, error, output, angle);
+//    snprintf(uart_buf, sizeof(uart_buf), "error: %.5f output: %.5f angle: %.5f \r\n", error, output, angle);
+
+    HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
+    return (uint32_t)angle;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -227,11 +248,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	SERVO_set_angle(90);
 
 	uint32_t now = HAL_GetTick();
-	if (now - last_trigger >= 50) {   // 50 ms interval
-	    HCSR04_trigger_pulse();        // just sends 10 µs pulse
+	if (now - last_trigger >= 30) {   // 50 ms interval
+	    HCSR04_trigger_pulse();       // just sends 10 µs pulse
 	    last_trigger = now;
 	}
 
@@ -239,17 +259,24 @@ int main(void)
 	    distance_ready = 0;
 	    DBUF_add(&distance_buffer, latest_distance);
 
-	    float desired_prec = DBUF_average(&distance_buffer);
+	    float current = DBUF_average(&distance_buffer);
+//	    float current = latest_distance;
+
+	    uint32_t action = PID_proportional(current);
+
+	    SERVO_set_angle(action);
+//	    UART_print_distance((float)action);
 
 
-	    uint8_t angle = SERVO_map_distance_to_angle(desired_prec);
+
+
+
+//	    uint8_t angle = SERVO_map_distance_to_angle(desired_prec);
 //	    SERVO_set_angle(angle);
 
 
 
-
-
-	    UART_print_average();
+//	    UART_print_average();
 
 	}
 

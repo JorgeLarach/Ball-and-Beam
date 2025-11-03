@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#define DBUF_SIZE 10  // Change here for number of recent readings
+#define DBUF_SIZE 5  // Change here for number of recent readings
 
 typedef struct{
 	float buffer[DBUF_SIZE];
