@@ -84,7 +84,15 @@ volatile uint8_t distance_ready = 0;     // flag to tell main loop new data is r
 
 const float SPEED_OF_SOUND_CM_US = 0.0343f; // cm per microsecond
 const uint8_t setpoint_cm = 20;
+
 const float Kp = 8.0f;
+const float Ki = 0.8f;
+const float Kd = 1.2f;
+
+const float dt = 0.05f;   // 50ms update rate = 20Hz
+
+float prev_error = 0.0f;
+float integral = 0.0f;
 
 DBUF distance_buffer;
 
@@ -179,15 +187,30 @@ uint32_t PID_proportional(float measured_distance){
 	float error = measured_distance - setpoint_cm;
 
 	if(error < 2 && error > -2) error = 0;
-    float output = Kp * error;
 
+    float P = Kp * error;
+
+    integral += error * dt;
+
+    if(integral > 50.0f) integral = 50.0f;
+    if(integral < -50.0f) integral = -50.0f;
+
+    float I = Ki * integral;
+
+    float derivative = (error - prev_error) / dt;
+    float D = Kd * derivative;
+
+    float output = P + I + D;
     float angle = 90.0f + output;
+
+    prev_error = error;
 
     if(angle < MIN_ROTATION_DEGREES) angle = MIN_ROTATION_DEGREES;
     if(angle > MAX_ROTATION_DEGREES) angle = MAX_ROTATION_DEGREES;
 
 //    SERVO_set_angle((uint8_t)angle);
-    snprintf(uart_buf, sizeof(uart_buf), "dist: %.5f error: %.5f output: %.5f angle: %.5f \r\n", measured_distance, error, output, angle);
+    snprintf(uart_buf, sizeof(uart_buf), "dist: %.2f error: %.2f output: %.2f p: %.2f i: %.2f d: %.2f angle: %.2f \r\n", measured_distance, error, output, P, I, D, angle);
+//    snprintf(uart_buf, sizeof(uart_buf), "dist: %.2f error: %.2f output: %.2f angle: %.2f \r\n", measured_distance, error, output, angle);
 //    snprintf(uart_buf, sizeof(uart_buf), "error: %.5f output: %.5f angle: %.5f \r\n", error, output, angle);
 
     HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
@@ -250,7 +273,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	uint32_t now = HAL_GetTick();
-	if (now - last_trigger >= 30) {   // 50 ms interval
+	if (now - last_trigger >= 50) {   // 50 ms interval
 	    HCSR04_trigger_pulse();       // just sends 10 µs pulse
 	    last_trigger = now;
 	}
