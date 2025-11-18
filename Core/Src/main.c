@@ -85,9 +85,26 @@ volatile uint8_t distance_ready = 0;     // flag to tell main loop new data is r
 const float SPEED_OF_SOUND_CM_US = 0.0343f; // cm per microsecond
 const uint8_t setpoint_cm = 20;
 
-const float Kp = 8.0f;
-const float Ki = 0.8f;
-const float Kd = 1.2f;
+//p = 6.8, Ki = 0.55, Kd = 2.8
+// Test 4
+//const float Kp = 6.8f;
+//const float Ki = 0.55f;
+//const float Kd = 2.8f;
+
+// Test 3
+const float Kp = 7.0f;
+const float Ki = 0.6f;
+const float Kd = 2.0f;
+
+// Test 2
+//const float Kp = 6.0f;
+//const float Ki = 0.5f;
+//const float Kd = 3.0f;
+
+// Test 1
+//const float Kp = 8.0f;
+//const float Ki = 0.8f;
+//const float Kd = 1.2f;
 
 const float dt = 0.05f;   // 50ms update rate = 20Hz
 
@@ -186,7 +203,7 @@ void UART_print_average(void) {
 uint32_t PID_proportional(float measured_distance){
 	float error = measured_distance - setpoint_cm;
 
-	if(error < 2 && error > -2) error = 0;
+	if(error < 0.5 && error > -0.5) error = 0;
 
     float P = Kp * error;
 
@@ -209,6 +226,7 @@ uint32_t PID_proportional(float measured_distance){
     if(angle > MAX_ROTATION_DEGREES) angle = MAX_ROTATION_DEGREES;
 
 //    SERVO_set_angle((uint8_t)angle);
+//    snprintf(uart_buf, sizeof(uart_buf), "%.2f\r\n", measured_distance);
     snprintf(uart_buf, sizeof(uart_buf), "dist: %.2f error: %.2f output: %.2f p: %.2f i: %.2f d: %.2f angle: %.2f \r\n", measured_distance, error, output, P, I, D, angle);
 //    snprintf(uart_buf, sizeof(uart_buf), "dist: %.2f error: %.2f output: %.2f angle: %.2f \r\n", measured_distance, error, output, angle);
 //    snprintf(uart_buf, sizeof(uart_buf), "error: %.5f output: %.5f angle: %.5f \r\n", error, output, angle);
@@ -263,7 +281,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  SERVO_set_angle(90);
+  SERVO_set_angle(180);
 
   uint32_t last_trigger = 0;
   while (1)
