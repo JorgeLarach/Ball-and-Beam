@@ -72,41 +72,26 @@ uint32_t SERVO_set_angle(uint8_t angle);
 uint32_t SERVO_calculate_pulse_width(uint8_t angle);
 void UART_print_distance(float distance);
 void UART_print_average(void);
-uint32_t PID_proportional(float measured_distance);
+uint32_t PID(float measured_distance);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/* HC-SR04 variables and constants */
 volatile uint8_t capture_idx = 0;
 volatile uint32_t edge_1_time = 0, edge_2_time = 0;
 volatile float latest_distance = -1.0f;  // shared between ISR and main
 volatile uint8_t distance_ready = 0;     // flag to tell main loop new data is ready
-
+const uint8_t ms_interval = 50; // Interval in ms between sensor readings (never < 50)
 const float SPEED_OF_SOUND_CM_US = 0.0343f; // cm per microsecond
-const uint8_t setpoint_cm = 20;
 
-// Test 4
-//const float Kp = 6.8f;
-//const float Ki = 0.55f;
-//const float Kd = 2.8f;
-
-// Test 3
+/* PID controller variables and constants */
 const float Kp = 7.0f;
 const float Ki = 0.6f;
 const float Kd = 2.0f;
-
-// Test 2
-//const float Kp = 6.0f;
-//const float Ki = 0.5f;
-//const float Kd = 3.0f;
-
-// Test 1
-//const float Kp = 8.0f;
-//const float Ki = 0.8f;
-//const float Kd = 1.2f;
-
-const float dt = 0.05f;   // 50ms update rate = 20Hz
-
+const uint8_t setpoint_cm = 20;
+const float dt = (float)ms_interval / 1000.0;   // 50ms update rate = 20Hzs
 float prev_error = 0.0f;
 float integral = 0.0f;
 
@@ -199,7 +184,7 @@ void UART_print_average(void) {
     HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
 }
 
-uint32_t PID_proportional(float measured_distance){
+uint32_t PID(float measured_distance){
 	float error = measured_distance - setpoint_cm;
 
 	if(error < 0.5 && error > -0.5) error = 0;
@@ -224,7 +209,6 @@ uint32_t PID_proportional(float measured_distance){
     if(angle < MIN_ROTATION_DEGREES) angle = MIN_ROTATION_DEGREES;
     if(angle > MAX_ROTATION_DEGREES) angle = MAX_ROTATION_DEGREES;
 
-//    SERVO_set_angle((uint8_t)angle);
 //    snprintf(uart_buf, sizeof(uart_buf), "%.2f\r\n", measured_distance);
     snprintf(uart_buf, sizeof(uart_buf), "dist: %.2f error: %.2f output: %.2f p: %.2f i: %.2f d: %.2f angle: %.2f \r\n", measured_distance, error, output, P, I, D, angle);
 //    snprintf(uart_buf, sizeof(uart_buf), "dist: %.2f error: %.2f output: %.2f angle: %.2f \r\n", measured_distance, error, output, angle);
@@ -280,7 +264,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  SERVO_set_angle(180);
+  SERVO_set_angle(90);
 
   uint32_t last_trigger = 0;
   while (1)
@@ -290,7 +274,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	uint32_t now = HAL_GetTick();
-	if (now - last_trigger >= 50) {   // 50 ms interval
+	if (now - last_trigger >= ms_interval) {   // 50 ms interval
 	    HCSR04_trigger_pulse();       // just sends 10 µs pulse
 	    last_trigger = now;
 	}
@@ -298,32 +282,10 @@ int main(void)
 	if (distance_ready) {
 	    distance_ready = 0;
 	    DBUF_add(&distance_buffer, latest_distance);
-
 	    float current = DBUF_average(&distance_buffer);
-//	    float current = latest_distance;
-
-	    uint32_t action = PID_proportional(current);
-
+	    uint32_t action = PID(current);
 	    SERVO_set_angle(action);
-//	    UART_print_distance((float)action);
-
-
-
-
-
-//	    uint8_t angle = SERVO_map_distance_to_angle(desired_prec);
-//	    SERVO_set_angle(angle);
-
-
-
-//	    UART_print_average();
-
 	}
-
-      // 1/seconds = hertz
-      // 1/0.05 seconds = 20hz - iterate while loop 20 times per sec
-//      HAL_Delay(50); // Sensor measurement interval ~20Hz
-
   }
   /* USER CODE END 3 */
 }

@@ -27,25 +27,25 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  000091d8  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000d139  00000000  00000000  00009208  2**0
+ 12 .debug_info   0000d14b  00000000  00000000  00009208  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00001de8  00000000  00000000  00016341  2**0
+ 13 .debug_abbrev 00001e05  00000000  00000000  00016353  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00000cd8  00000000  00000000  00018130  2**3
+ 14 .debug_aranges 00000cd8  00000000  00000000  00018158  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_rnglists 00000a03  00000000  00000000  00018e08  2**0
+ 15 .debug_rnglists 00000a03  00000000  00000000  00018e30  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  0001722f  00000000  00000000  0001980b  2**0
+ 16 .debug_macro  0001722f  00000000  00000000  00019833  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000d847  00000000  00000000  00030a3a  2**0
+ 17 .debug_line   0000d84a  00000000  00000000  00030a62  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0008febc  00000000  00000000  0003e281  2**0
+ 18 .debug_str    0008feb7  00000000  00000000  0003e2ac  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  000ce13d  2**0
+ 19 .comment      00000043  00000000  00000000  000ce163  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00004758  00000000  00000000  000ce180  2**2
+ 20 .debug_frame  00004758  00000000  00000000  000ce1a8  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000068  00000000  00000000  000d28d8  2**0
+ 21 .debug_line_str 00000068  00000000  00000000  000d2900  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1659,13 +1659,13 @@ uint32_t SERVO_calculate_pulse_width(uint8_t angle){
  80011f6:	4770      	bx	lr
  80011f8:	b60b60b7 	.word	0xb60b60b7
 
-080011fc <PID_proportional>:
+080011fc <PID>:
     if(avg < 0) snprintf(uart_buf, sizeof(uart_buf), "Average: ERR\r\n");
     else snprintf(uart_buf, sizeof(uart_buf), "Average: %.1f cm\r\n", avg);
     HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
 }
 
-uint32_t PID_proportional(float measured_distance){
+uint32_t PID(float measured_distance){
  80011fc:	e92d 4fb0 	stmdb	sp!, {r4, r5, r7, r8, r9, sl, fp, lr}
  8001200:	b09e      	sub	sp, #120	@ 0x78
  8001202:	af0e      	add	r7, sp, #56	@ 0x38
@@ -1683,12 +1683,12 @@ uint32_t PID_proportional(float measured_distance){
  8001222:	eeb6 7a00 	vmov.f32	s14, #96	@ 0x3f000000  0.5
  8001226:	eef4 7ac7 	vcmpe.f32	s15, s14
  800122a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 800122e:	d50b      	bpl.n	8001248 <PID_proportional+0x4c>
+ 800122e:	d50b      	bpl.n	8001248 <PID+0x4c>
  8001230:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
  8001234:	eebe 7a00 	vmov.f32	s14, #224	@ 0xbf000000 -0.5
  8001238:	eef4 7ac7 	vcmpe.f32	s15, s14
  800123c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 8001240:	dd02      	ble.n	8001248 <PID_proportional+0x4c>
+ 8001240:	dd02      	ble.n	8001248 <PID+0x4c>
  8001242:	f04f 0300 	mov.w	r3, #0
  8001246:	63fb      	str	r3, [r7, #60]	@ 0x3c
 
@@ -1699,49 +1699,49 @@ uint32_t PID_proportional(float measured_distance){
  8001254:	edc7 7a0d 	vstr	s15, [r7, #52]	@ 0x34
 
     integral += error * dt;
- 8001258:	ed9f 7a61 	vldr	s14, [pc, #388]	@ 80013e0 <PID_proportional+0x1e4>
+ 8001258:	ed9f 7a61 	vldr	s14, [pc, #388]	@ 80013e0 <PID+0x1e4>
  800125c:	edd7 7a0f 	vldr	s15, [r7, #60]	@ 0x3c
  8001260:	ee27 7a27 	vmul.f32	s14, s14, s15
- 8001264:	4b5f      	ldr	r3, [pc, #380]	@ (80013e4 <PID_proportional+0x1e8>)
+ 8001264:	4b5f      	ldr	r3, [pc, #380]	@ (80013e4 <PID+0x1e8>)
  8001266:	edd3 7a00 	vldr	s15, [r3]
  800126a:	ee77 7a27 	vadd.f32	s15, s14, s15
- 800126e:	4b5d      	ldr	r3, [pc, #372]	@ (80013e4 <PID_proportional+0x1e8>)
+ 800126e:	4b5d      	ldr	r3, [pc, #372]	@ (80013e4 <PID+0x1e8>)
  8001270:	edc3 7a00 	vstr	s15, [r3]
 
     if(integral > 50.0f) integral = 50.0f;
- 8001274:	4b5b      	ldr	r3, [pc, #364]	@ (80013e4 <PID_proportional+0x1e8>)
+ 8001274:	4b5b      	ldr	r3, [pc, #364]	@ (80013e4 <PID+0x1e8>)
  8001276:	edd3 7a00 	vldr	s15, [r3]
- 800127a:	ed9f 7a5b 	vldr	s14, [pc, #364]	@ 80013e8 <PID_proportional+0x1ec>
+ 800127a:	ed9f 7a5b 	vldr	s14, [pc, #364]	@ 80013e8 <PID+0x1ec>
  800127e:	eef4 7ac7 	vcmpe.f32	s15, s14
  8001282:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 8001286:	dd02      	ble.n	800128e <PID_proportional+0x92>
- 8001288:	4b56      	ldr	r3, [pc, #344]	@ (80013e4 <PID_proportional+0x1e8>)
- 800128a:	4a58      	ldr	r2, [pc, #352]	@ (80013ec <PID_proportional+0x1f0>)
+ 8001286:	dd02      	ble.n	800128e <PID+0x92>
+ 8001288:	4b56      	ldr	r3, [pc, #344]	@ (80013e4 <PID+0x1e8>)
+ 800128a:	4a58      	ldr	r2, [pc, #352]	@ (80013ec <PID+0x1f0>)
  800128c:	601a      	str	r2, [r3, #0]
     if(integral < -50.0f) integral = -50.0f;
- 800128e:	4b55      	ldr	r3, [pc, #340]	@ (80013e4 <PID_proportional+0x1e8>)
+ 800128e:	4b55      	ldr	r3, [pc, #340]	@ (80013e4 <PID+0x1e8>)
  8001290:	edd3 7a00 	vldr	s15, [r3]
- 8001294:	ed9f 7a56 	vldr	s14, [pc, #344]	@ 80013f0 <PID_proportional+0x1f4>
+ 8001294:	ed9f 7a56 	vldr	s14, [pc, #344]	@ 80013f0 <PID+0x1f4>
  8001298:	eef4 7ac7 	vcmpe.f32	s15, s14
  800129c:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 80012a0:	d502      	bpl.n	80012a8 <PID_proportional+0xac>
- 80012a2:	4b50      	ldr	r3, [pc, #320]	@ (80013e4 <PID_proportional+0x1e8>)
- 80012a4:	4a53      	ldr	r2, [pc, #332]	@ (80013f4 <PID_proportional+0x1f8>)
+ 80012a0:	d502      	bpl.n	80012a8 <PID+0xac>
+ 80012a2:	4b50      	ldr	r3, [pc, #320]	@ (80013e4 <PID+0x1e8>)
+ 80012a4:	4a53      	ldr	r2, [pc, #332]	@ (80013f4 <PID+0x1f8>)
  80012a6:	601a      	str	r2, [r3, #0]
 
     float I = Ki * integral;
- 80012a8:	ed9f 7a53 	vldr	s14, [pc, #332]	@ 80013f8 <PID_proportional+0x1fc>
- 80012ac:	4b4d      	ldr	r3, [pc, #308]	@ (80013e4 <PID_proportional+0x1e8>)
+ 80012a8:	ed9f 7a53 	vldr	s14, [pc, #332]	@ 80013f8 <PID+0x1fc>
+ 80012ac:	4b4d      	ldr	r3, [pc, #308]	@ (80013e4 <PID+0x1e8>)
  80012ae:	edd3 7a00 	vldr	s15, [r3]
  80012b2:	ee67 7a27 	vmul.f32	s15, s14, s15
  80012b6:	edc7 7a0c 	vstr	s15, [r7, #48]	@ 0x30
 
     float derivative = (error - prev_error) / dt;
- 80012ba:	4b50      	ldr	r3, [pc, #320]	@ (80013fc <PID_proportional+0x200>)
+ 80012ba:	4b50      	ldr	r3, [pc, #320]	@ (80013fc <PID+0x200>)
  80012bc:	edd3 7a00 	vldr	s15, [r3]
  80012c0:	ed97 7a0f 	vldr	s14, [r7, #60]	@ 0x3c
  80012c4:	ee37 7a67 	vsub.f32	s14, s14, s15
- 80012c8:	eddf 6a45 	vldr	s13, [pc, #276]	@ 80013e0 <PID_proportional+0x1e4>
+ 80012c8:	eddf 6a45 	vldr	s13, [pc, #276]	@ 80013e0 <PID+0x1e4>
  80012cc:	eec7 7a26 	vdiv.f32	s15, s14, s13
  80012d0:	edc7 7a0b 	vstr	s15, [r7, #44]	@ 0x2c
     float D = Kd * derivative;
@@ -1759,12 +1759,12 @@ uint32_t PID_proportional(float measured_distance){
  80012f8:	edc7 7a09 	vstr	s15, [r7, #36]	@ 0x24
     float angle = 90.0f + output;
  80012fc:	edd7 7a09 	vldr	s15, [r7, #36]	@ 0x24
- 8001300:	ed9f 7a3f 	vldr	s14, [pc, #252]	@ 8001400 <PID_proportional+0x204>
+ 8001300:	ed9f 7a3f 	vldr	s14, [pc, #252]	@ 8001400 <PID+0x204>
  8001304:	ee77 7a87 	vadd.f32	s15, s15, s14
  8001308:	edc7 7a0e 	vstr	s15, [r7, #56]	@ 0x38
 
     prev_error = error;
- 800130c:	4a3b      	ldr	r2, [pc, #236]	@ (80013fc <PID_proportional+0x200>)
+ 800130c:	4a3b      	ldr	r2, [pc, #236]	@ (80013fc <PID+0x200>)
  800130e:	6bfb      	ldr	r3, [r7, #60]	@ 0x3c
  8001310:	6013      	str	r3, [r2, #0]
 
@@ -1772,16 +1772,16 @@ uint32_t PID_proportional(float measured_distance){
  8001312:	edd7 7a0e 	vldr	s15, [r7, #56]	@ 0x38
  8001316:	eef5 7ac0 	vcmpe.f32	s15, #0.0
  800131a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 800131e:	d502      	bpl.n	8001326 <PID_proportional+0x12a>
+ 800131e:	d502      	bpl.n	8001326 <PID+0x12a>
  8001320:	f04f 0300 	mov.w	r3, #0
  8001324:	63bb      	str	r3, [r7, #56]	@ 0x38
     if(angle > MAX_ROTATION_DEGREES) angle = MAX_ROTATION_DEGREES;
  8001326:	edd7 7a0e 	vldr	s15, [r7, #56]	@ 0x38
- 800132a:	ed9f 7a36 	vldr	s14, [pc, #216]	@ 8001404 <PID_proportional+0x208>
+ 800132a:	ed9f 7a36 	vldr	s14, [pc, #216]	@ 8001404 <PID+0x208>
  800132e:	eef4 7ac7 	vcmpe.f32	s15, s14
  8001332:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 8001336:	dd01      	ble.n	800133c <PID_proportional+0x140>
- 8001338:	4b33      	ldr	r3, [pc, #204]	@ (8001408 <PID_proportional+0x20c>)
+ 8001336:	dd01      	ble.n	800133c <PID+0x140>
+ 8001338:	4b33      	ldr	r3, [pc, #204]	@ (8001408 <PID+0x20c>)
  800133a:	63bb      	str	r3, [r7, #56]	@ 0x38
 
 //    SERVO_set_angle((uint8_t)angle);
@@ -1822,21 +1822,21 @@ uint32_t PID_proportional(float measured_distance){
  800139e:	ed8d 7b04 	vstr	d7, [sp, #16]
  80013a2:	e9cd ab02 	strd	sl, fp, [sp, #8]
  80013a6:	e9cd 8900 	strd	r8, r9, [sp]
- 80013aa:	4a18      	ldr	r2, [pc, #96]	@ (800140c <PID_proportional+0x210>)
+ 80013aa:	4a18      	ldr	r2, [pc, #96]	@ (800140c <PID+0x210>)
  80013ac:	2164      	movs	r1, #100	@ 0x64
- 80013ae:	4818      	ldr	r0, [pc, #96]	@ (8001410 <PID_proportional+0x214>)
+ 80013ae:	4818      	ldr	r0, [pc, #96]	@ (8001410 <PID+0x214>)
  80013b0:	f003 ff96 	bl	80052e0 <sniprintf>
 //    snprintf(uart_buf, sizeof(uart_buf), "dist: %.2f error: %.2f output: %.2f angle: %.2f \r\n", measured_distance, error, output, angle);
 //    snprintf(uart_buf, sizeof(uart_buf), "error: %.5f output: %.5f angle: %.5f \r\n", error, output, angle);
 
     HAL_UART_Transmit(&huart2, (uint8_t*)uart_buf, strlen(uart_buf), HAL_MAX_DELAY);
- 80013b4:	4816      	ldr	r0, [pc, #88]	@ (8001410 <PID_proportional+0x214>)
+ 80013b4:	4816      	ldr	r0, [pc, #88]	@ (8001410 <PID+0x214>)
  80013b6:	f7fe ff63 	bl	8000280 <strlen>
  80013ba:	4603      	mov	r3, r0
  80013bc:	b29a      	uxth	r2, r3
  80013be:	f04f 33ff 	mov.w	r3, #4294967295	@ 0xffffffff
- 80013c2:	4913      	ldr	r1, [pc, #76]	@ (8001410 <PID_proportional+0x214>)
- 80013c4:	4813      	ldr	r0, [pc, #76]	@ (8001414 <PID_proportional+0x218>)
+ 80013c2:	4913      	ldr	r1, [pc, #76]	@ (8001410 <PID+0x214>)
+ 80013c4:	4813      	ldr	r0, [pc, #76]	@ (8001414 <PID+0x218>)
  80013c6:	f002 ff79 	bl	80042bc <HAL_UART_Transmit>
     return (uint32_t)angle;
  80013ca:	edd7 7a0e 	vldr	s15, [r7, #56]	@ 0x38
@@ -1933,55 +1933,51 @@ int main(void)
 	uint32_t now = HAL_GetTick();
  800145a:	f000 fccb 	bl	8001df4 <HAL_GetTick>
  800145e:	60b8      	str	r0, [r7, #8]
-	if (now - last_trigger >= 50) {   // 50 ms interval
+	if (now - last_trigger >= ms_interval) {   // 50 ms interval
  8001460:	68ba      	ldr	r2, [r7, #8]
  8001462:	68fb      	ldr	r3, [r7, #12]
  8001464:	1ad3      	subs	r3, r2, r3
- 8001466:	2b31      	cmp	r3, #49	@ 0x31
- 8001468:	d903      	bls.n	8001472 <main+0x5a>
+ 8001466:	2232      	movs	r2, #50	@ 0x32
+ 8001468:	4293      	cmp	r3, r2
+ 800146a:	d303      	bcc.n	8001474 <main+0x5c>
 	    HCSR04_trigger_pulse();       // just sends 10 µs pulse
- 800146a:	f7ff fe79 	bl	8001160 <HCSR04_trigger_pulse>
+ 800146c:	f7ff fe78 	bl	8001160 <HCSR04_trigger_pulse>
 	    last_trigger = now;
- 800146e:	68bb      	ldr	r3, [r7, #8]
- 8001470:	60fb      	str	r3, [r7, #12]
+ 8001470:	68bb      	ldr	r3, [r7, #8]
+ 8001472:	60fb      	str	r3, [r7, #12]
 	}
 
 	if (distance_ready) {
- 8001472:	4b13      	ldr	r3, [pc, #76]	@ (80014c0 <main+0xa8>)
- 8001474:	781b      	ldrb	r3, [r3, #0]
- 8001476:	b2db      	uxtb	r3, r3
- 8001478:	2b00      	cmp	r3, #0
- 800147a:	d0ee      	beq.n	800145a <main+0x42>
+ 8001474:	4b12      	ldr	r3, [pc, #72]	@ (80014c0 <main+0xa8>)
+ 8001476:	781b      	ldrb	r3, [r3, #0]
+ 8001478:	b2db      	uxtb	r3, r3
+ 800147a:	2b00      	cmp	r3, #0
+ 800147c:	d0ed      	beq.n	800145a <main+0x42>
 	    distance_ready = 0;
- 800147c:	4b10      	ldr	r3, [pc, #64]	@ (80014c0 <main+0xa8>)
- 800147e:	2200      	movs	r2, #0
- 8001480:	701a      	strb	r2, [r3, #0]
+ 800147e:	4b10      	ldr	r3, [pc, #64]	@ (80014c0 <main+0xa8>)
+ 8001480:	2200      	movs	r2, #0
+ 8001482:	701a      	strb	r2, [r3, #0]
 	    DBUF_add(&distance_buffer, latest_distance);
- 8001482:	4b10      	ldr	r3, [pc, #64]	@ (80014c4 <main+0xac>)
- 8001484:	edd3 7a00 	vldr	s15, [r3]
- 8001488:	eeb0 0a67 	vmov.f32	s0, s15
- 800148c:	480b      	ldr	r0, [pc, #44]	@ (80014bc <main+0xa4>)
- 800148e:	f7ff fd4b 	bl	8000f28 <DBUF_add>
-
+ 8001484:	4b0f      	ldr	r3, [pc, #60]	@ (80014c4 <main+0xac>)
+ 8001486:	edd3 7a00 	vldr	s15, [r3]
+ 800148a:	eeb0 0a67 	vmov.f32	s0, s15
+ 800148e:	480b      	ldr	r0, [pc, #44]	@ (80014bc <main+0xa4>)
+ 8001490:	f7ff fd4a 	bl	8000f28 <DBUF_add>
 	    float current = DBUF_average(&distance_buffer);
- 8001492:	480a      	ldr	r0, [pc, #40]	@ (80014bc <main+0xa4>)
- 8001494:	f7ff fd74 	bl	8000f80 <DBUF_average>
- 8001498:	ed87 0a01 	vstr	s0, [r7, #4]
-//	    float current = latest_distance;
-
-	    uint32_t action = PID_proportional(current);
- 800149c:	ed97 0a01 	vldr	s0, [r7, #4]
- 80014a0:	f7ff feac 	bl	80011fc <PID_proportional>
- 80014a4:	6038      	str	r0, [r7, #0]
-
+ 8001494:	4809      	ldr	r0, [pc, #36]	@ (80014bc <main+0xa4>)
+ 8001496:	f7ff fd73 	bl	8000f80 <DBUF_average>
+ 800149a:	ed87 0a01 	vstr	s0, [r7, #4]
+	    uint32_t action = PID(current);
+ 800149e:	ed97 0a01 	vldr	s0, [r7, #4]
+ 80014a2:	f7ff feab 	bl	80011fc <PID>
+ 80014a6:	6038      	str	r0, [r7, #0]
 	    SERVO_set_angle(action);
- 80014a6:	683b      	ldr	r3, [r7, #0]
- 80014a8:	b2db      	uxtb	r3, r3
- 80014aa:	4618      	mov	r0, r3
- 80014ac:	f7ff fe76 	bl	800119c <SERVO_set_angle>
+ 80014a8:	683b      	ldr	r3, [r7, #0]
+ 80014aa:	b2db      	uxtb	r3, r3
+ 80014ac:	4618      	mov	r0, r3
+ 80014ae:	f7ff fe75 	bl	800119c <SERVO_set_angle>
   {
- 80014b0:	e7d3      	b.n	800145a <main+0x42>
- 80014b2:	bf00      	nop
+ 80014b2:	e7d2      	b.n	800145a <main+0x42>
  80014b4:	200001f4 	.word	0x200001f4
  80014b8:	2000023c 	.word	0x2000023c
  80014bc:	200002e4 	.word	0x200002e4
