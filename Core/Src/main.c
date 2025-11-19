@@ -85,7 +85,6 @@ volatile uint8_t distance_ready = 0;     // flag to tell main loop new data is r
 const float SPEED_OF_SOUND_CM_US = 0.0343f; // cm per microsecond
 const uint8_t setpoint_cm = 20;
 
-//p = 6.8, Ki = 0.55, Kd = 2.8
 // Test 4
 //const float Kp = 6.8f;
 //const float Ki = 0.55f;

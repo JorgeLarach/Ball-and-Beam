@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load data
-filename = "Test 3/test3.txt"
+filename = "Version 3/version3.txt"
 
 with open(filename, "r") as f:
     readings = [float(line.strip()) for line in f if line.strip()]
